@@ -1,9 +1,10 @@
 import {Component} from 'react'
+import {PieChart, Pie, Legend, Cell, ResponsiveContainer} from 'recharts'
+import {Link} from 'react-router-dom'
 import Loader from 'react-loader-spinner'
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css'
 import LatestMatch from '../LatestMatch'
 import MatchCard from '../MatchCard'
-
 import './index.css'
 
 const teamMatchesApiUrl = 'https://apis.ccbp.in/ipl/'
@@ -53,13 +54,66 @@ class TeamMatches extends Component {
   renderRecentMatchesList = () => {
     const {teamMatchesData} = this.state
     const {recentMatches} = teamMatchesData
+    let won = 0
+    let lost = 0
+    let draw = 0
+    const updatedData = recentMatches.map(item => {
+      if (item.matchStatus === 'Won') {
+        won += 1
+      } else if (item.matchStatus === 'Lost') {
+        lost += 1
+      } else {
+        draw += 1
+      }
+      return item
+    })
+    const data = [
+      {
+        count: won,
+        status: 'Won',
+      },
+      {
+        count: lost,
+        status: 'Lost',
+      },
+      {
+        count: draw,
+        state: 'Draw',
+      },
+    ]
 
     return (
-      <ul className="recent-matches-list">
-        {recentMatches.map(recentMatch => (
-          <MatchCard matchDetails={recentMatch} key={recentMatch.id} />
-        ))}
-      </ul>
+      <>
+        <ResponsiveContainer className="pie" width="100%" height={300}>
+          <PieChart>
+            <Pie
+              cx="70%"
+              cy="40%"
+              data={data}
+              startAngle={0}
+              endAngle={360}
+              innerRadius="40%"
+              outerRadius="70%"
+              dataKey="count"
+            >
+              <Cell name="Won" fill="#fecba6" />
+              <Cell name="Lost" fill="#b3d23f" />
+              <Cell name="Draw" fill="#a44c9e" />
+            </Pie>
+            <Legend
+              iconType="circle"
+              layout="vertical"
+              verticalAlign="middle"
+              align="right"
+            />
+          </PieChart>
+        </ResponsiveContainer>
+        <ul className="recent-matches-list">
+          {recentMatches.map(recentMatch => (
+            <MatchCard matchDetails={recentMatch} key={recentMatch.id} />
+          ))}
+        </ul>
+      </>
     )
   }
 
@@ -69,6 +123,11 @@ class TeamMatches extends Component {
 
     return (
       <div className="responsive-container">
+        <Link to="/" className="home-link">
+          <button type="button" className="home-btn">
+            Back
+          </button>
+        </Link>
         <img src={teamBannerURL} alt="team banner" className="team-banner" />
         <LatestMatch latestMatchData={latestMatch} key={latestMatch.id} />
         {this.renderRecentMatchesList()}
